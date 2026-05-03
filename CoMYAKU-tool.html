@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="application-name" content="CoMYAKU文字作成ツール">
+<meta name="author" content="Boruzio">
+<meta name="description" content="CoMYAKU文字作成ツール　Boruzio作成">
+<meta name="generator" content="Powered by CoMYAKU">
+<meta name="copyright" content="Boruzio">
+<title>CoMYAKU タイポグラフィツール</title>
+<!--
+  CoMYAKU タイポグラフィツール v1.0.0
+  作成：Boruzio
+
+  【ライセンス・権利表記】
+  本ツールのビジュアルスタイル（色・フォームデザイン）は、
+  大阪・関西万博のデザインシステム「CoMYAKU」を参考にしています。
+  デザインIPの権利は OSAKA OPEN DESIGN COMMONS および
+  万博デザインシステム作者 引地耕太 氏に帰属します。
+  本ツールで生成した画像を使用する際は、
+  OSAKA OPEN DESIGN COMMONS の最新ライセンス条件をご確認ください。
+  https://note.com/hikichikouta/n/n2eea24bb3a86
+-->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f4f0;display:flex;justify-content:center;padding:20px;min-height:100vh;font-family:'Hiragino Sans','Yu Gothic','Noto Sans JP',sans-serif}
+#root{width:100%;max-width:900px;display:flex;flex-direction:column;gap:8px}
+#header .title{font-size:16px;font-weight:500;color:#1a1a1a}
+#header .title span{color:#E83422}
+#app{display:flex;gap:10px;height:580px;margin-top:8px}
+#ctrl{width:258px;flex-shrink:0;display:flex;flex-direction:column;border:0.5px solid #ddd;border-radius:10px;overflow:hidden;background:#fff}
+#cwrap{flex:1;border:0.5px solid #ddd;border-radius:10px;overflow:hidden;background:#fff;user-select:none}
+canvas{display:block}
+.tabs{display:flex;border-bottom:0.5px solid #ddd;flex-shrink:0;background:#f5f4f0}
+.tab{flex:1;font-size:11px;padding:7px 2px;text-align:center;cursor:pointer;color:#888;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:#1a1a1a;font-weight:500;border-color:#E83422;background:#fff}
+.tpan{display:none;flex-direction:column;gap:7px;padding:8px;overflow-y:auto;flex:1}
+.tpan.on{display:flex}
+.grp{background:#fff;border:0.5px solid #e8e8e8;border-radius:8px;padding:9px;flex-shrink:0}
+.lbl{font-size:10px;font-weight:500;color:#aaa;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+textarea{width:100%;height:64px;resize:none;font-size:13px;padding:5px 7px;border:0.5px solid #ccc;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit;line-height:1.5}
+.sr{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.sr:last-of-type{margin-bottom:0}
+.srl{font-size:11px;color:#888;width:52px;flex-shrink:0}
+.sr input[type=range]{flex:1;min-width:0}
+.sv{font-size:11px;font-weight:500;min-width:24px;text-align:right;color:#1a1a1a}
+.fbrow,.mrow{display:flex;gap:3px;flex-wrap:wrap}
+.fb,.mb{font-size:11px;padding:3px 7px;border:0.5px solid #ccc;cursor:pointer;background:transparent;color:#888;font-family:inherit}
+.fb{border-radius:4px}
+.mb{border-radius:20px}
+.fb.on,.mb.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.fb.inh,.mb.inh{border-style:dashed;color:#bbb}
+.lc{border:0.5px solid #e8e8e8;border-radius:8px;padding:8px;margin-bottom:6px;background:#f9f9f7}
+.lc:last-child{margin-bottom:0}
+.lch{display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.lcn{width:18px;height:18px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lcp{font-size:12px;color:#888;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lcr{font-size:10px;color:#aaa;cursor:pointer;padding:1px 6px;border:0.5px solid #ddd;border-radius:3px;flex-shrink:0;background:#fff}
+.lcrow{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.lcrow:last-child{margin-bottom:0}
+.lcl{font-size:10px;color:#aaa;width:34px;flex-shrink:0}
+.lcrow input[type=range]{flex:1;min-width:0}
+.lcv{font-size:11px;font-weight:500;min-width:20px;text-align:right;color:#1a1a1a}
+.spg{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+.sp{width:38px;height:38px;border:0.5px solid #e8e8e8;border-radius:8px;cursor:pointer;background:#f5f4f0;display:flex;align-items:center;justify-content:center}
+.sp.on{border:2px solid #333;background:#fff}
+.dbtn{width:100%;padding:4px;font-size:11px;border-radius:6px;border:0.5px solid #E83422;color:#E83422;background:#fde8e5;cursor:pointer;display:none;margin-top:5px;font-family:inherit}
+.dbtn.show{display:block}
+.mdbtn{flex:1;padding:6px 4px;font-size:12px;border-radius:6px;border:0.5px solid #ddd;cursor:pointer;background:#f5f4f0;color:#888;font-family:inherit;transition:background .12s,color .12s}
+.mdbtn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+#dir-wrap{display:none;border-top:0.5px solid #e8e8e8;padding-top:8px;margin-top:8px}
+/* コンパスローズ 3×3 */
+.rose{display:grid;grid-template-columns:repeat(3,34px);grid-template-rows:repeat(3,34px);gap:3px}
+.rb8{width:34px;height:34px;border-radius:50%;border:0.5px solid #ddd;cursor:pointer;background:#f9f9f7;color:#888;font-size:16px;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:background .12s,color .12s,border-color .12s}
+.rb8:hover{background:#eeede8;border-color:#aaa}
+.rb8.on{color:#fff;border-color:transparent}
+.rose-ctr{width:34px;height:34px;border-radius:50%;background:#f0efec;border:0.5px solid #e0e0e0;display:flex;align-items:center;justify-content:center}
+.hint{font-size:10px;color:#aaa;margin-top:4px;line-height:1.5}
+.rrow{display:flex;gap:4px;margin-bottom:6px}
+.rb{flex:1;font-size:11px;padding:4px;border-radius:4px;border:0.5px solid #ccc;text-align:center;cursor:pointer;background:transparent;color:#888;font-family:inherit}
+.rb.on{background:#E83422;color:#fff;border-color:#E83422}
+.ebtn{width:100%;padding:7px;font-size:13px;font-weight:500;border:none;border-radius:8px;background:#1a1a1a;color:#fff;cursor:pointer;font-family:inherit}
+.ebtn:hover{background:#333}
+#footer{font-size:10px;color:#bbb;text-align:right;padding:2px 0;letter-spacing:.03em}
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="header"><div class="title">Co<span>MYAKU</span> タイポグラフィツール</div></div>
+  <div id="app">
+    <div id="ctrl">
+      <div class="tabs">
+        <div class="tab on" data-t="global">グローバル</div>
+        <div class="tab" data-t="lines">ライン別</div>
+        <div class="tab" data-t="stamp">スタンプ</div>
+        <div class="tab" data-t="exp">書出</div>
+      </div>
+      <div class="tpan on" id="tp-global">
+        <div class="grp"><div class="lbl">テキスト</div><textarea id="txt">こみゃく</textarea></div>
+        <div class="grp"><div class="lbl">フォント</div><div class="fbrow" id="gfont"></div></div>
+        <div class="grp">
+          <div class="lbl">スタイル</div>
+          <div class="sr"><span class="srl">文字サイズ</span><input type="range" id="r-sz" min="20" max="150" value="68" step="2"><span class="sv" id="d-sz">68</span></div>
+          <div class="sr"><span class="srl">太さ・丸み</span><input type="range" id="r-wt" min="0" max="38" value="11" step="1"><span class="sv" id="d-wt">11</span></div>
+          <div class="sr"><span class="srl">字間</span><input type="range" id="r-kn" min="-8" max="50" value="2" step="1"><span class="sv" id="d-kn">2</span></div>
+          <div class="sr"><span class="srl">行間</span><input type="range" id="r-lh" min="90" max="210" value="130" step="5"><span class="sv" id="d-lh">1.3</span></div>
+          <div class="sr"><span class="srl">バウンス</span><input type="range" id="r-bo" min="0" max="28" value="6" step="1"><span class="sv" id="d-bo">6</span></div>
+        </div>
+        <div class="grp"><div class="lbl">カラーモード</div><div class="mrow" id="gcol"></div></div>
+      </div>
+      <div class="tpan" id="tp-lines"><div id="lcards"></div></div>
+      <div class="tpan" id="tp-stamp">
+        <div class="grp">
+          <div class="lbl">スタンプ</div>
+          <div class="spg" id="spg"></div>
+          <div class="sr"><span class="srl">大きさ</span><input type="range" id="r-ss" min="16" max="120" value="44" step="4"><span class="sv" id="d-ss">44</span></div>
+          <button class="dbtn" id="dbtn">✕ 選択スタンプを削除</button>
+          <div id="mode-wrap" style="display:none;margin-top:8px">
+            <div class="lbl">操作モード</div>
+            <div style="display:flex;gap:4px;margin-bottom:8px">
+              <button class="mdbtn on" id="md-move">✥ 移動</button>
+              <button class="mdbtn" id="md-eye">👁 目線</button>
+            </div>
+          </div>
+          <div id="dir-wrap">
+            <div class="lbl">目線の向き</div>
+            <div class="rose" id="rose"></div>
+          </div>
+          <div class="hint" id="shint">スタンプを選んでキャンバスをクリック</div>
+        </div>
+      </div>
+      <div class="tpan" id="tp-exp">
+        <div class="grp">
+          <div class="lbl">解像度</div>
+          <div class="rrow">
+            <div class="rb on" data-r="1">1×</div>
+            <div class="rb" data-r="2">2×</div>
+            <div class="rb" data-r="3">3×</div>
+          </div>
+          <button class="ebtn" id="ebtn">PNG ダウンロード</button>
+        </div>
+      </div>
+    </div>
+    <div id="cwrap"><canvas id="cv"></canvas></div>
+  </div>
+  <div id="footer">CoMYAKU タイポグラフィツール v1.0.0 &nbsp;/&nbsp; Boruzio</div>
+</div>
+<script>
+const R='#E83422',B='#0063BD',Gr='#888780',W='#FFFFFF',K='#1A1A1A';
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const wrap=document.getElementById('cwrap');
+
+const DIR8=[
+  {l:'↖',a:-Math.PI*3/4},{l:'↑',a:-Math.PI/2},{l:'↗',a:-Math.PI/4},
+  {l:'←',a:Math.PI},     null,                  {l:'→',a:0},
+  {l:'↙',a:Math.PI*3/4}, {l:'↓',a:Math.PI/2},  {l:'↘',a:Math.PI/4},
+];
+const FONTS=[
+  {id:'gothic',label:'ゴシック',css:"'Hiragino Sans','Yu Gothic','Noto Sans JP',sans-serif"},
+  {id:'mincho',label:'明朝',css:"'Hiragino Mincho Pro','Yu Mincho','Noto Serif JP',serif"},
+  {id:'maru',label:'丸ゴシ',css:"'Hiragino Maru Gothic Pro','Meiryo',sans-serif"},
+  {id:'impact',label:'Impact',css:"Impact,'Arial Black',sans-serif"},
+];
+const MODES=[{id:'alt',label:'赤青'},{id:'r3',label:'3色'},{id:'r',label:'赤'},{id:'b',label:'青'},{id:'g',label:'灰'}];
+const S={txt:'こみゃく',font:'gothic',sz:68,wt:11,kn:2,lh:130,bo:6,mode:'alt',ss:44,res:1,stamps:[],atype:null,selId:null,drag:null,dox:0,doy:0,ls:[]};
+let nid=0,pendingDrag=null,pdX=0,pdY=0,stampMode='move';
+
+function syncLS(){const n=S.txt.split('\n').length;while(S.ls.length<n)S.ls.push({font:null,sz:null,wt:null,mode:null});if(S.ls.length>n)S.ls.length=n;}
+function eFont(li){return S.ls[li]?.font??S.font;}function eSz(li){return S.ls[li]?.sz??S.sz;}function eWt(li){return S.ls[li]?.wt??S.wt;}function eMode(li){return S.ls[li]?.mode??S.mode;}
+function fntCSS(id){return FONTS.find(f=>f.id===id)?.css||FONTS[0].css;}
+function pr(n){return((Math.sin(n+1.3)*99991)%1+1)%1;}
+function getColM(i,m){if(m==='alt')return i%2===0?R:B;if(m==='r3')return [R,B,Gr][Math.floor(pr(i*7+3)*3)];if(m==='r')return R;if(m==='b')return B;return Gr;}
+
+function drawCh(c,ch,x,y,col,sz,wt,fc){c.font=`900 ${sz}px ${fc}`;c.textBaseline='alphabetic';c.lineCap='round';c.lineJoin='round';c.strokeStyle=W;c.lineWidth=wt*2+10;c.strokeText(ch,x,y);c.strokeStyle=col;c.lineWidth=Math.max(.5,wt*2);c.strokeText(ch,x,y);c.fillStyle=col;c.fillText(ch,x,y);}
+
+function drawStampAt(c,type,x,y,sz,angle){
+  const r=sz/2;
+  if(type.startsWith('eye-')){
+    const col=type==='eye-r'?R:type==='eye-b'?B:Gr;
+    c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle=col;c.fill();
+    c.beginPath();c.arc(x,y,r*.62,0,Math.PI*2);c.fillStyle=W;c.fill();
+    const a=angle??(-Math.PI/4);
+    c.beginPath();c.arc(x+Math.cos(a)*r*.28,y+Math.sin(a)*r*.28,r*.3,0,Math.PI*2);c.fillStyle=K;c.fill();
+  }else if(type.startsWith('blob-')){
+    const col=type==='blob-r'?R:B;c.save();c.translate(x,y);c.scale(r/18,r/18);
+    c.beginPath();c.moveTo(0,-18);c.bezierCurveTo(13,-18,20,-8,18,3);c.bezierCurveTo(15,13,5,19,-5,17);c.bezierCurveTo(-15,14,-21,4,-18,-7);c.bezierCurveTo(-15,-17,-8,-18,0,-18);
+    c.fillStyle=col;c.fill();c.restore();
+    c.beginPath();c.arc(x+r*.26,y-r*.3,r*.35,0,Math.PI*2);c.fillStyle=W;c.fill();
+    c.beginPath();c.arc(x+r*.37,y-r*.41,r*.18,0,Math.PI*2);c.fillStyle=K;c.fill();
+  }else if(type.startsWith('ring-')){
+    const col=type==='ring-r'?R:B;c.beginPath();c.arc(x,y,r*.84,0,Math.PI*2);c.strokeStyle=col;c.lineWidth=r*.28;c.stroke();
+    c.beginPath();c.arc(x+r*.5,y-r*.5,r*.22,0,Math.PI*2);c.fillStyle=col;c.fill();
+  }else if(type==='ghost'){
+    c.save();c.translate(x,y);c.scale(r/18,r/18);
+    c.beginPath();c.arc(0,-4,14,Math.PI,0);c.lineTo(14,16);c.bezierCurveTo(14,22,7,22,5,17);c.bezierCurveTo(3,12,-3,12,-5,17);c.bezierCurveTo(-7,22,-14,22,-14,16);
+    c.closePath();c.fillStyle=W;c.fill();c.strokeStyle=K;c.lineWidth=1.2;c.stroke();c.restore();
+    c.beginPath();c.arc(x-r*.22,y-r*.18,r*.22,0,Math.PI*2);c.fillStyle=K;c.fill();
+    c.beginPath();c.arc(x+r*.22,y-r*.18,r*.22,0,Math.PI*2);c.fillStyle=K;c.fill();
+  }
+}
+
+function renderToCtx(c,w,h){
+  c.fillStyle=W;c.fillRect(0,0,w,h);syncLS();
+  const lines=S.txt.split('\n'),lhs=lines.map((_,li)=>eSz(li)*S.lh/100);
+  const totH=lhs.reduce((a,b)=>a+b,0)-lhs[lhs.length-1]+eSz(lines.length-1);
+  let cy=(h-totH)/2+eSz(0)*.88,gi=0;
+  lines.forEach((line,li)=>{
+    const chars=[...line],sz=eSz(li),wt=eWt(li),m=eMode(li),fc=fntCSS(eFont(li));
+    if(!chars.length){cy+=lhs[li];return;}
+    c.font=`900 ${sz}px ${fc}`;
+    const ws=chars.map(ch=>c.measureText(ch).width);
+    const tw=ws.reduce((a,b)=>a+b,0)+S.kn*Math.max(0,chars.length-1);
+    let cx2=(w-tw)/2;
+    chars.forEach((ch,ci)=>{const col=getColM(gi,m);const bv=(pr(gi*13+li*7)-.5)*2*S.bo;drawCh(c,ch,cx2,cy+bv,col,sz,wt,fc);cx2+=ws[ci]+S.kn;gi++;});
+    cy+=lhs[li];
+  });
+  S.stamps.forEach(s=>drawStampAt(c,s.type,s.x,s.y,s.size,s.angle));
+}
+
+function render(){
+  renderToCtx(ctx,cv.width,cv.height);
+  if(S.selId!=null){const s=S.stamps.find(x=>x.id===S.selId);if(s){ctx.save();ctx.strokeStyle='#555';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(s.x,s.y,s.size/2+6,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}}
+}
+
+function buildRose(stamp){
+  const rose=document.getElementById('rose');rose.innerHTML='';
+  const col=stamp.type==='eye-r'?R:stamp.type==='eye-b'?B:Gr;
+  DIR8.forEach(d=>{
+    if(!d){
+      const ctr=document.createElement('div');ctr.className='rose-ctr';
+      const a=stamp.angle??(-Math.PI/4);
+      const ex=(17+Math.cos(a)*7).toFixed(1),ey=(17+Math.sin(a)*7).toFixed(1);
+      ctr.innerHTML=`<svg width="26" height="26" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="${col}"/><circle cx="17" cy="17" r="9" fill="#fff"/><circle cx="${ex}" cy="${ey}" r="4" fill="#1a1a1a"/></svg>`;
+      rose.appendChild(ctr);return;
+    }
+    const isOn=stamp.angle!==undefined&&Math.abs(stamp.angle-d.a)<0.01;
+    const b=document.createElement('button');b.className='rb8'+(isOn?' on':'');
+    if(isOn)b.style.background=col;
+    b.textContent=d.l;
+    b.onclick=()=>{stamp.angle=d.a;buildRose(stamp);render();};
+    rose.appendChild(b);
+  });
+  document.getElementById('dir-wrap').style.display='';
+}
+function updateRose(){const s=S.selId!=null?S.stamps.find(x=>x.id===S.selId):null;if(s&&s.type.startsWith('eye-')){buildRose(s);}else document.getElementById('dir-wrap').style.display='none';}
+
+function updateModeWrap(){
+  const s=S.selId!=null?S.stamps.find(x=>x.id===S.selId):null;
+  const mw=document.getElementById('mode-wrap');
+  if(s&&s.type.startsWith('eye-')){
+    mw.style.display='';
+  }else{
+    mw.style.display='none';
+    stampMode='move';
+    document.getElementById('md-move').classList.add('on');
+    document.getElementById('md-eye').classList.remove('on');
+  }
+}
+document.getElementById('md-move').onclick=()=>{
+  stampMode='move';
+  document.getElementById('md-move').classList.add('on');
+  document.getElementById('md-eye').classList.remove('on');
+  cv.style.cursor='grab';
+  updateHint();
+};
+document.getElementById('md-eye').onclick=()=>{
+  stampMode='eye';
+  document.getElementById('md-eye').classList.add('on');
+  document.getElementById('md-move').classList.remove('on');
+  cv.style.cursor='crosshair';
+  updateHint();
+};
+
+function buildGFont(){const c=document.getElementById('gfont');c.innerHTML='';FONTS.forEach(f=>{const b=document.createElement('button');b.className='fb'+(S.font===f.id?' on':'');b.textContent=f.label;b.onclick=()=>{S.font=f.id;buildGFont();render();};c.appendChild(b);});}
+function buildGCol(){const c=document.getElementById('gcol');c.innerHTML='';MODES.forEach(m=>{const b=document.createElement('button');b.className='mb'+(S.mode===m.id?' on':'');b.textContent=m.label;b.onclick=()=>{S.mode=m.id;buildGCol();render();};c.appendChild(b);});}
+function makeSliderRow(label,val,min,max,step,cb,inh){const row=document.createElement('div');row.className='lcrow';const l=document.createElement('div');l.className='lcl';l.textContent=label;const inp=document.createElement('input');inp.type='range';inp.min=min;inp.max=max;inp.value=val;inp.step=step;inp.style.flex='1';if(inh)inp.style.opacity='.45';const v=document.createElement('span');v.className='lcv';v.textContent=val;inp.addEventListener('input',()=>{const n=parseFloat(inp.value);v.textContent=n;inp.style.opacity='1';cb(n);});row.appendChild(l);row.appendChild(inp);row.appendChild(v);return row;}
+function buildLC(){syncLS();const lines=S.txt.split('\n');const cont=document.getElementById('lcards');cont.innerHTML='';lines.forEach((line,li)=>{const ls=S.ls[li];const card=document.createElement('div');card.className='lc';const hdr=document.createElement('div');hdr.className='lch';const num=document.createElement('div');num.className='lcn';num.style.background=li%2===0?R:B;num.textContent=li+1;const prev=document.createElement('div');prev.className='lcp';prev.textContent=line.trim()||'(空行)';const rst=document.createElement('div');rst.className='lcr';rst.textContent='↩';rst.onclick=()=>{S.ls[li]={font:null,sz:null,wt:null,mode:null};buildLC();render();};hdr.appendChild(num);hdr.appendChild(prev);hdr.appendChild(rst);card.appendChild(hdr);const fr=document.createElement('div');fr.className='lcrow';const fl=document.createElement('div');fl.className='lcl';fl.textContent='フォント';fr.appendChild(fl);const fbr=document.createElement('div');fbr.className='fbrow';fbr.style.flex='1';FONTS.forEach(f=>{const b=document.createElement('button');const exp=ls.font===f.id,inh=ls.font===null&&S.font===f.id;b.className='fb'+(exp?' on':inh?' inh':'');b.textContent=f.label;b.style.fontSize='10px';b.style.padding='2px 5px';b.onclick=()=>{S.ls[li].font=S.ls[li].font===f.id?null:f.id;buildLC();render();};fbr.appendChild(b);});fr.appendChild(fbr);card.appendChild(fr);card.appendChild(makeSliderRow('サイズ',eSz(li),20,150,2,v=>{S.ls[li].sz=v;render();},ls.sz===null));card.appendChild(makeSliderRow('太さ',eWt(li),0,38,1,v=>{S.ls[li].wt=v;render();},ls.wt===null));const colR=document.createElement('div');colR.className='lcrow';const colL=document.createElement('div');colL.className='lcl';colL.textContent='カラー';colR.appendChild(colL);const colB=document.createElement('div');colB.className='mrow';colB.style.flex='1';MODES.forEach(m=>{const b=document.createElement('button');const exp=ls.mode===m.id,inh=ls.mode===null&&S.mode===m.id;b.className='mb'+(exp?' on':inh?' inh':'');b.textContent=m.label;b.style.fontSize='10px';b.style.padding='2px 5px';b.onclick=()=>{S.ls[li].mode=S.ls[li].mode===m.id?null:m.id;buildLC();render();};colB.appendChild(b);});colR.appendChild(colB);card.appendChild(colR);cont.appendChild(card);});}
+buildGFont();buildGCol();buildLC();
+
+document.querySelectorAll('.tab[data-t]').forEach(t=>{t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.tpan').forEach(x=>x.classList.remove('on'));t.classList.add('on');document.getElementById('tp-'+t.dataset.t).classList.add('on');if(t.dataset.t==='lines')buildLC();if(t.dataset.t==='stamp')updateRose();};});
+function bindSl(id,key,did,fmt){document.getElementById(id).addEventListener('input',function(){const v=parseFloat(this.value);S[key]=v;document.getElementById(did).textContent=fmt?fmt(v):v;if(key==='ss'&&S.selId!=null){const s=S.stamps.find(x=>x.id===S.selId);if(s)s.size=v;}render();});}
+bindSl('r-sz','sz','d-sz');bindSl('r-wt','wt','d-wt');bindSl('r-kn','kn','d-kn');bindSl('r-lh','lh','d-lh',v=>(v/100).toFixed(1));bindSl('r-bo','bo','d-bo');bindSl('r-ss','ss','d-ss');
+document.getElementById('txt').addEventListener('input',e=>{S.txt=e.target.value;syncLS();render();if(document.querySelector('.tab.on')?.dataset.t==='lines')buildLC();});
+
+const STAMPS=[
+  {id:'eye-r',svg:`<circle cx="16" cy="16" r="14" fill="#E83422"/><circle cx="16" cy="16" r="9" fill="#fff"/><circle cx="19" cy="13" r="4" fill="#1a1a1a"/>`},
+  {id:'eye-b',svg:`<circle cx="16" cy="16" r="14" fill="#0063BD"/><circle cx="16" cy="16" r="9" fill="#fff"/><circle cx="19" cy="13" r="4" fill="#1a1a1a"/>`},
+  {id:'eye-g',svg:`<circle cx="16" cy="16" r="14" fill="#888780"/><circle cx="16" cy="16" r="9" fill="#fff"/><circle cx="19" cy="13" r="4" fill="#1a1a1a"/>`},
+  {id:'blob-r',svg:`<path d="M16 3C23 3 27 9 25 17C23 25 15 29 9 25C3 21 2 13 6 7C8 3 12 3 16 3Z" fill="#E83422"/><circle cx="20" cy="9" r="5" fill="#fff"/><circle cx="22" cy="7" r="2.5" fill="#1a1a1a"/>`},
+  {id:'blob-b',svg:`<path d="M16 3C23 3 27 9 25 17C23 25 15 29 9 25C3 21 2 13 6 7C8 3 12 3 16 3Z" fill="#0063BD"/><circle cx="20" cy="9" r="5" fill="#fff"/><circle cx="22" cy="7" r="2.5" fill="#1a1a1a"/>`},
+  {id:'ring-r',svg:`<circle cx="16" cy="16" r="12" fill="none" stroke="#E83422" stroke-width="4"/><circle cx="22" cy="10" r="3" fill="#E83422"/>`},
+  {id:'ring-b',svg:`<circle cx="16" cy="16" r="12" fill="none" stroke="#0063BD" stroke-width="4"/><circle cx="22" cy="10" r="3" fill="#0063BD"/>`},
+  {id:'ghost',svg:`<path d="M16 4A11 11 0 0 1 27 15L27 28L23.5 24 20 28 16.5 24 13 28 9.5 24 6 28 6 15A11 11 0 0 1 16 4Z" fill="#fff" stroke="#1a1a1a" stroke-width="1.4"/><circle cx="13" cy="15" r="2.5" fill="#1a1a1a"/><circle cx="19" cy="15" r="2.5" fill="#1a1a1a"/>`},
+];
+function buildPalette(){const g=document.getElementById('spg');g.innerHTML='';STAMPS.forEach(({id,svg})=>{const d=document.createElement('div');d.className='sp'+(S.atype===id?' on':'');d.innerHTML=`<svg width="30" height="30" viewBox="0 0 32 32">${svg}</svg>`;d.onclick=()=>{S.atype=S.atype===id?null:id;S.selId=null;document.getElementById('dbtn').classList.remove('show');updateRose();buildPalette();updateHint();cv.style.cursor=S.atype?'crosshair':'default';render();};g.appendChild(d);});}
+function updateHint(){
+  const tab=document.querySelector('.tab.on')?.dataset.t;
+  if(S.atype){document.getElementById('shint').textContent='キャンバスをクリックして配置　ESCで解除';return;}
+  if(tab==='stamp'&&stampMode==='eye'){document.getElementById('shint').textContent='👁 キャンバスをクリック → 目玉がその方向を向きます';return;}
+  document.getElementById('shint').textContent='✥ 移動モード：ドラッグで位置を変更';
+}
+buildPalette();
+document.querySelectorAll('.rb[data-r]').forEach(b=>{b.onclick=()=>{S.res=parseInt(b.dataset.r);document.querySelectorAll('.rb').forEach(x=>x.classList.remove('on'));b.classList.add('on');};});
+
+function initCv(){const w=wrap.clientWidth||580,h=wrap.clientHeight||560;if(w>10&&h>10){cv.width=w;cv.height=h;render();}else requestAnimationFrame(initCv);}
+requestAnimationFrame(initCv);
+window.addEventListener('resize',()=>{cv.width=wrap.clientWidth;cv.height=wrap.clientHeight;render();});
+function cpos(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*(cv.width/r.width),y:(e.clientY-r.top)*(cv.height/r.height)};}
+function hitTest(px,py){for(let i=S.stamps.length-1;i>=0;i--){const s=S.stamps[i],dx=px-s.x,dy=py-s.y;if(dx*dx+dy*dy<=(s.size/2+6)**2)return s;}return null;}
+
+cv.addEventListener('mousedown',e=>{
+  const{x,y}=cpos(e);
+  if(S.atype){
+    const s={type:S.atype,x,y,size:S.ss,id:++nid,angle:-Math.PI/4};
+    S.stamps.push(s);S.selId=s.id;S.atype=null;
+    stampMode='move';
+    document.getElementById('md-move').classList.add('on');
+    document.getElementById('md-eye').classList.remove('on');
+    buildPalette();updateHint();
+    document.getElementById('dbtn').classList.add('show');
+    if(document.querySelector('.tab.on')?.dataset.t==='stamp'){updateRose();updateModeWrap();}
+    cv.style.cursor='grab';render();
+  }else{
+    // 目線モード：クリック位置からスタンプ中心への角度を設定
+    if(stampMode==='eye'&&S.selId!=null){
+      const s=S.stamps.find(x=>x.id===S.selId);
+      if(s&&s.type.startsWith('eye-')){
+        s.angle=Math.atan2(y-s.y,x-s.x);
+        // 最近傍の8方向にスナップ
+        const snap=Math.round(s.angle/(Math.PI/4))*(Math.PI/4);
+        if(Math.abs(s.angle-snap)<Math.PI/8)s.angle=snap;
+        buildRose(s);render();return;
+      }
+    }
+    // 移動モード
+    const h=hitTest(x,y);
+    if(h){
+      S.selId=h.id;pendingDrag=h;pdX=x;pdY=y;
+      document.getElementById('r-ss').value=h.size;document.getElementById('d-ss').textContent=h.size;S.ss=h.size;
+      document.getElementById('dbtn').classList.add('show');
+      if(document.querySelector('.tab.on')?.dataset.t==='stamp'){updateRose();updateModeWrap();}
+      cv.style.cursor='grab';
+    }else{
+      S.selId=null;S.drag=null;pendingDrag=null;stampMode='move';
+      document.getElementById('dbtn').classList.remove('show');
+      if(document.querySelector('.tab.on')?.dataset.t==='stamp'){updateRose();updateModeWrap();}
+    }
+    render();
+  }
+});
+cv.addEventListener('mousemove',e=>{
+  const{x,y}=cpos(e);
+  if(stampMode==='eye'){
+    // 目線モードでは選択中スタンプの向きをリアルタイムプレビュー
+    if(S.selId!=null){
+      const s=S.stamps.find(x=>x.id===S.selId);
+      if(s&&s.type.startsWith('eye-')){
+        cv.style.cursor='crosshair';
+      }
+    }
+    return;
+  }
+  if(pendingDrag&&Math.hypot(x-pdX,y-pdY)>5){
+    S.drag=pendingDrag;S.dox=pdX-pendingDrag.x;S.doy=pdY-pendingDrag.y;pendingDrag=null;cv.style.cursor='grabbing';
+  }
+  if(S.drag){S.drag.x=x-S.dox;S.drag.y=y-S.doy;render();return;}
+  if(!S.atype&&!pendingDrag)cv.style.cursor=hitTest(x,y)?'grab':'default';
+});
+cv.addEventListener('mouseup',()=>{S.drag=null;pendingDrag=null;});
+cv.addEventListener('mouseleave',()=>{S.drag=null;pendingDrag=null;});
+document.getElementById('dbtn').onclick=()=>{S.stamps=S.stamps.filter(s=>s.id!==S.selId);S.selId=null;S.drag=null;pendingDrag=null;stampMode='move';document.getElementById('md-move').classList.add('on');document.getElementById('md-eye').classList.remove('on');document.getElementById('dbtn').classList.remove('show');updateRose();updateModeWrap();render();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){S.atype=null;buildPalette();updateHint();cv.style.cursor='default';}if((e.key==='Delete'||e.key==='Backspace')&&S.selId!=null&&document.activeElement.tagName!=='TEXTAREA'){S.stamps=S.stamps.filter(s=>s.id!==S.selId);S.selId=null;stampMode='move';document.getElementById('md-move').classList.add('on');document.getElementById('md-eye').classList.remove('on');document.getElementById('dbtn').classList.remove('show');updateRose();updateModeWrap();render();}});
+document.getElementById('ebtn').onclick=()=>{const res=S.res;const oc=document.createElement('canvas');oc.width=cv.width*res;oc.height=cv.height*res;const oc2=oc.getContext('2d');if(res>1)oc2.scale(res,res);renderToCtx(oc2,cv.width,cv.height);oc.toBlob(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='CoMYAKU-typo.png';a.click();URL.revokeObjectURL(a.href);},'image/png');};
+</script>
+</body>
+</html>
