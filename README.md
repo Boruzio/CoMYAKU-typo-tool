@@ -10,5 +10,6 @@ CoMYAKU タイポグラフィツール
 
 ## 注意事項
 - ローカル環境での使用を推奨します  
-- デザインIPの権利は OSAKA OPEN DESIGN COMMONS / 引地耕太 氏に帰属します  
+- デザインIPの権利は OSAKA OPEN DESIGN COMMONS に帰属します
+- 参考：https://note.com/hikichikouta/n/n2eea24bb3a86
 - 商用利用の際は、使用しているフォントのライセンスを各自でご確認ください
