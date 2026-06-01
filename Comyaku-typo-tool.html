@@ -14,16 +14,14 @@
   作成：Boruzio
 
   【免責事項】
-  本ツールは非公式のファンメイドツールです。
-  OSAKA OPEN DESIGN COMMONS とは一切関係ありません。
+  本ツールは非公式ツールです。OSAKA OPEN DESIGN COMMONS とは一切関係ありません。
   生成物の使用・公開・配布は利用者自身の責任で行ってください。
   作者は本ツールの使用により生じた損害について責任を負いません。
 
   【ライセンス・権利表記】
   本ツールのビジュアルスタイル（色・フォームデザイン）は、
   大阪・関西万博のデザインシステム「CoMYAKU」を参考にしています。
-  デザインIPの権利は OSAKA OPEN DESIGN COMMONS および
-  万博デザインシステム作者 引地耕太 氏に帰属します。
+  デザインIPの権利は OSAKA OPEN DESIGN COMMONS に帰属します。
   本ツールで生成した画像を使用する際は、
   OSAKA OPEN DESIGN COMMONS の最新ライセンス条件をご確認ください。
   https://note.com/hikichikouta/n/n2eea24bb3a86
@@ -371,10 +369,33 @@ cv.addEventListener('mousemove',e=>{
 });
 cv.addEventListener('mouseup',()=>{S.drag=null;pendingDrag=null;});
 cv.addEventListener('mouseleave',()=>{S.drag=null;pendingDrag=null;});
+
+// タッチイベント対応
+function tpos(e){
+  e.preventDefault();
+  const t=e.touches[0]||e.changedTouches[0];
+  const r=cv.getBoundingClientRect();
+  return{x:(t.clientX-r.left)*(cv.width/r.width),y:(t.clientY-r.top)*(cv.height/r.height)};
+}
+cv.addEventListener('touchstart',e=>{
+  const me=new MouseEvent('mousedown',{clientX:e.touches[0].clientX,clientY:e.touches[0].clientY});
+  cv.dispatchEvent(me);
+},{passive:false});
+cv.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const{x,y}=tpos(e);
+  if(stampMode==='eye')return;
+  if(pendingDrag&&Math.hypot(x-pdX,y-pdY)>5){
+    S.drag=pendingDrag;S.dox=pdX-pendingDrag.x;S.doy=pdY-pendingDrag.y;pendingDrag=null;
+  }
+  if(S.drag){S.drag.x=x-S.dox;S.drag.y=y-S.doy;render();}
+},{passive:false});
+cv.addEventListener('touchend',e=>{
+  S.drag=null;pendingDrag=null;
+},{passive:false});
 document.getElementById('dbtn').onclick=()=>{S.stamps=S.stamps.filter(s=>s.id!==S.selId);S.selId=null;S.drag=null;pendingDrag=null;stampMode='move';document.getElementById('md-move').classList.add('on');document.getElementById('md-eye').classList.remove('on');document.getElementById('dbtn').classList.remove('show');updateRose();updateModeWrap();render();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){S.atype=null;buildPalette();updateHint();cv.style.cursor='default';}if((e.key==='Delete'||e.key==='Backspace')&&S.selId!=null&&document.activeElement.tagName!=='TEXTAREA'){S.stamps=S.stamps.filter(s=>s.id!==S.selId);S.selId=null;stampMode='move';document.getElementById('md-move').classList.add('on');document.getElementById('md-eye').classList.remove('on');document.getElementById('dbtn').classList.remove('show');updateRose();updateModeWrap();render();}});
 document.getElementById('ebtn').onclick=()=>{const res=S.res;const oc=document.createElement('canvas');oc.width=cv.width*res;oc.height=cv.height*res;const oc2=oc.getContext('2d');if(res>1)oc2.scale(res,res);renderToCtx(oc2,cv.width,cv.height);oc.toBlob(blob=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Comyaku-typo.png';a.click();URL.revokeObjectURL(a.href);},'image/png');};
 </script>
 </body>
 </html>
-
