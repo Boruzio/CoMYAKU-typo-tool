@@ -10,6 +10,4 @@ CoMYAKU タイポグラフィツール
 
 ## 注意事項
 - ローカル環境での使用を推奨します  
-- デザインIPの権利は OSAKA OPEN DESIGN COMMONS に帰属します
-- 参考：https://note.com/hikichikouta/n/n2eea24bb3a86
-- 商用利用の際は、使用しているフォントのライセンスを各自でご確認ください
+- 公式ガイドライン参照：https://www.expo2025.or.jp/wp/wp-content/uploads/260330r2_designsystem-guideline.pdf
